@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Infrastructure Progress Record</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -40,28 +39,15 @@
                 <input type="number" class="form-control" id="roadLength">
             </div>
 
-            <button type="submit" class="btn btn-primary">Save to Excel</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
         </form>
 
-        <h3 class="mt-5">Submitted Projects</h3>
-        <button class="btn btn-success mb-3" onclick="downloadExcel()">Download Excel</button>
-        <table class="table table-bordered mt-3">
-            <thead>
-                <tr>
-                    <th>Project Name</th>
-                    <th>Project Type</th>
-                    <th>Estimated Amount</th>
-                    <th>Contract Date</th>
-                    <th>Road Length</th>
-                </tr>
-            </thead>
-            <tbody id="projectTableBody"></tbody>
-        </table>
+        <div class="alert alert-success mt-3" id="successMessage" style="display: none;">
+            ✅ Data Submitted Successfully!
+        </div>
     </div>
 
     <script>
-        let projects = [];
-
         document.getElementById('projectType').addEventListener('change', function() {
             let roadField = document.getElementById('roadLengthField');
             roadField.style.display = this.value === 'Road' ? 'block' : 'none';
@@ -70,48 +56,30 @@
         document.getElementById('projectForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
-            let projectName = document.getElementById('projectName').value;
-            let projectType = document.getElementById('projectType').value;
-            let estimatedAmount = document.getElementById('estimatedAmount').value;
-            let contractDate = document.getElementById('contractDate').value;
-            let roadLength = projectType === 'Road' ? document.getElementById('roadLength').value : "N/A";
-
-            let newEntry = {
-                "Project Name": projectName,
-                "Project Type": projectType,
-                "Estimated Amount": estimatedAmount,
-                "Contract Date": contractDate,
-                "Road Length": roadLength
+            let formData = {
+                projectName: document.getElementById('projectName').value,
+                projectType: document.getElementById('projectType').value,
+                estimatedAmount: document.getElementById('estimatedAmount').value,
+                contractDate: document.getElementById('contractDate').value,
+                roadLength: document.getElementById('projectType').value === 'Road' ? document.getElementById('roadLength').value : ""
             };
 
-            projects.push(newEntry);
-            updateTable();
+            fetch("https://script.google.com/macros/s/AKfycbwvCu9eBKUopXfhiyk80oM5i9Th6oLaraXsGUEVpYPndpXxApD42GV8lZ7gzYM3MqFI0Q/exec", {
+                method: "POST",
+                body: JSON.stringify(formData),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data === "Success") {
+                    document.getElementById("successMessage").style.display = "block";
+                    document.getElementById("projectForm").reset();
+                }
+            })
+            .catch(error => console.error("Error:", error));
         });
-
-        function updateTable() {
-            let tableBody = document.getElementById('projectTableBody');
-            tableBody.innerHTML = "";
-            projects.forEach(row => {
-                tableBody.innerHTML += `
-                    <tr>
-                        <td>${row["Project Name"]}</td>
-                        <td>${row["Project Type"]}</td>
-                        <td>${row["Estimated Amount"]}</td>
-                        <td>${row["Contract Date"]}</td>
-                        <td>${row["Road Length"]}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        function downloadExcel() {
-            let ws = XLSX.utils.json_to_sheet(projects);
-            let wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Projects");
-
-            XLSX.writeFile(wb, "Infrastructure_Progress.xlsx");
-        }
     </script>
 </body>
 </html>
-
