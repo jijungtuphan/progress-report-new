@@ -45,6 +45,22 @@
         <div class="alert alert-success mt-3" id="successMessage" style="display: none;">
             ✅ Data Submitted Successfully!
         </div>
+
+        <h3 class="mt-5">Submitted Records</h3>
+        <table class="table table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>Project Name</th>
+                    <th>Project Type</th>
+                    <th>Estimated Amount</th>
+                    <th>Contract Date</th>
+                    <th>Road Length (if Road)</th>
+                </tr>
+            </thead>
+            <tbody id="dataTable">
+                <!-- Data will be inserted here -->
+            </tbody>
+        </table>
     </div>
 
     <script>
@@ -61,7 +77,7 @@
                 projectType: document.getElementById('projectType').value,
                 estimatedAmount: document.getElementById('estimatedAmount').value,
                 contractDate: document.getElementById('contractDate').value,
-                roadLength: document.getElementById('projectType').value === 'Road' ? document.getElementById('roadLength').value : ""
+                roadLength: document.getElementById('projectType').value === 'Road' ? document.getElementById('roadLength').value : "N/A"
             };
 
             fetch("https://script.google.com/macros/s/AKfycbwvCu9eBKUopXfhiyk80oM5i9Th6oLaraXsGUEVpYPndpXxApD42GV8lZ7gzYM3MqFI0Q/exec", {
@@ -76,10 +92,23 @@
                 if (data === "Success") {
                     document.getElementById("successMessage").style.display = "block";
                     document.getElementById("projectForm").reset();
+                    addDataToTable(formData);
                 }
             })
             .catch(error => console.error("Error:", error));
         });
+
+        function addDataToTable(data) {
+            let table = document.getElementById("dataTable");
+            let newRow = table.insertRow();
+
+            newRow.insertCell(0).textContent = data.projectName;
+            newRow.insertCell(1).textContent = data.projectType;
+            newRow.insertCell(2).textContent = data.estimatedAmount;
+            newRow.insertCell(3).textContent = data.contractDate;
+            newRow.insertCell(4).textContent = data.roadLength;
+        }
     </script>
 </body>
 </html>
+
